@@ -1,0 +1,700 @@
+\documentclass[12pt]{article}
+
+%---------------------------------------------------------------
+% Idioma: español si el paquete babel-spanish está instalado;
+% en caso contrario, inglés para que el documento siga compilando.
+%---------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\IfFileExists{spanish.ldf}{%
+  \usepackage[spanish]{babel}%
+}{%
+  \usepackage[english]{babel}%
+  \PackageWarning{GOV_AKADI}{babel-spanish no instalado; se usa english}%
+}
+\usepackage{geometry}
+\usepackage{seqsplit}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{longtable}
+
+\geometry{a4paper, margin=2.5cm}
+\setlist{itemsep=2pt, topsep=4pt}
+\setlength{\LTpre}{6pt}
+\setlength{\LTpost}{6pt}
+
+\title{
+\textbf{GOV\_AKADI / AGF-AKADI}\\
+\large Documento Completo para Producción Real\\
+\normalsize Versión 1.2.1-CANDIDATE
+}
+
+\date{Borrador para revisión humana --- 23 de noviembre de 2026}
+
+\begin{document}
+
+\maketitle
+
+%===============================================================
+\section{Naturaleza y estado del documento}
+
+Este documento describe el diseño, el alcance, los requisitos, los
+controles y el plan de verificación de GOV\_AKADI / AGF-AKADI para una
+eventual operación en producción real. Es un \textbf{borrador de diseño}:
+no acredita implementación, validación, autorización, activación ni
+operación real de ninguna capacidad.
+
+\subsection{Etiquetas}
+
+\begin{description}[leftmargin=4.2cm, style=nextline]
+    \item[\texttt{[VIGENTE]}] Disposición ya establecida en la línea base documental.
+    \item[\texttt{[PROPUESTA]}] Contenido nuevo que completa lo no descrito. No está aprobado.
+    \item[\texttt{[DECISIÓN PENDIENTE]}] Elección que solo puede tomar una autoridad humana competente.
+    \item[\texttt{[SIN VERIFICAR]}] Afirmación no comprobada con evidencia.
+\end{description}
+
+\subsection{Alcance de la autorización}
+
+\texttt{[VIGENTE]} Este documento no autoriza la ejecución de ningún motor
+opaco o comercial, dentro o fuera del chat. Describe el diseño y las condiciones
+que deben cumplirse antes de cualquier uso. Ningún motor comercial se ha
+evaluado, y la modalidad sin API permanece NO\_APLICABLE hasta superar G1 a G5.
+
+\subsection{Vocabulario de estado}
+
+Los términos de ausencia se usan de forma única en todo el documento:
+
+\begin{description}[leftmargin=4.2cm, style=nextline]
+    \item[NO\_VERIFICABLE] No existen medios o evidencia suficientes para comprobar un dato dentro del alcance.
+    \item[NO\_DISPONIBLE] El elemento requerido no existe en la modalidad o el entorno declarados.
+    \item[NO\_APLICABLE] El requisito no es exigible en la modalidad o para ese motor.
+\end{description}
+
+%===============================================================
+\section{Resumen}
+
+\begin{itemize}
+    \item El sistema busca responder con utilidad, trazabilidad y control a cualquier tipo de petición.
+    \item Puede usar motores transformer y no transformer, privados o comerciales opacos.
+    \item En la modalidad sin API, el motor se ejecuta en infraestructura propia y debe superar cinco puertas de admisión (G1 a G5).
+    \item El código se genera sin ejecutarse; la ejecución requiere un entorno aislado y autorización por tarea.
+    \item Hoy ninguna capacidad del sistema está implementada ni activada. Los componentes de prueba GA-COMP-001 y GA-EVI-001 demuestran el procedimiento de evidencia, pero no acreditan capacidades del sistema. Las decisiones D-01 a D-10 condicionan el avance.
+\end{itemize}
+
+%===============================================================
+\section{Objetivo de producción real}
+
+\subsection{Declaración}
+
+\texttt{[PROPUESTA]} El sistema debe responder de forma útil, trazable y
+controlada a peticiones de cualquier tema, proceso, documento, código,
+consulta o pregunta, en un entorno de chat. Utiliza uno o varios motores de
+lenguaje, privados o comerciales, incluidos motores opacos de arquitectura
+transformer y no transformer. No depende en tiempo de ejecución de una API
+externa del proveedor del motor.
+
+\subsection{Distinción obligatoria}
+
+\texttt{[VIGENTE]} Estar diseñado para producción real no equivale a estar
+implementado, autorizado ni operando en producción real. Cada condición
+conserva su propia clasificación (Sección~\ref{sec:estados}).
+
+%===============================================================
+\section{Alcance funcional}
+\label{sec:alcance}
+
+\texttt{[PROPUESTA]} La tabla define el riesgo base de cada categoría. El
+contexto puede elevarlo, nunca reducirlo sin evidencia.
+
+\begin{longtable}{|p{3.1cm}|p{4.6cm}|p{2.1cm}|p{4.2cm}|}
+\hline
+\textbf{Categoría} & \textbf{Ejemplos} & \textbf{Riesgo base} & \textbf{Tratamiento} \\
+\hline
+\endhead
+Conversación general & Explicaciones, redacción informal, ideas & Bajo & Respuesta directa con control estándar. \\
+\hline
+Consulta de información & Hechos, datos, normas, precios, noticias & Medio & Indicar fecha de corte; verificar hechos vigentes con fuente. \\
+\hline
+Documentos & Redacción, resumen, revisión, traducción & Medio & Conservar el original; no alterar fuentes; marcar supuestos. \\
+\hline
+Procesos & Procedimientos, planes, flujos operativos & Medio--Alto & Declarar supuestos y dependencias; no sustituir la decisión humana. \\
+\hline
+Código y Python & Scripts, funciones, análisis de datos, depuración & Alto & Generación sin ejecución; ejecución solo en entorno aislado autorizado (Sección~\ref{sec:codigo}). \\
+\hline
+Asesoría sensible & Salud, legal, financiera, seguridad personal & Alto & Información general, límites explícitos y remisión a profesional. \\
+\hline
+Contenido prohibido & Armas, malware, explotación de menores, otros definidos por política & No atendible & Rechazo explícito y registro del evento. \\
+\hline
+\end{longtable}
+
+\subsection{Límites}
+
+\texttt{[VIGENTE]} Ninguna respuesta se presenta como verificada sin
+evidencia que la sustente. El sistema distingue entre lo que sabe, lo que
+supone y lo que no puede comprobar.
+
+%===============================================================
+\section{Clases de motor}
+\label{sec:motores}
+
+\subsection{Clasificación}
+
+\begin{longtable}{|p{3.6cm}|p{5.4cm}|p{5.4cm}|}
+\hline
+\textbf{Clase} & \textbf{Descripción} & \textbf{Uso típico} \\
+\hline
+\endhead
+T1: Transformer decodificador & Generación autorregresiva de propósito general. & Conversación, documentos, código. \\
+\hline
+T2: Transformer codificador o codificador-decodificador & Representación y transformación de texto. & Clasificación, recuperación, resumen controlado. \\
+\hline
+N1: Espacio de estados (SSM) & Modelo secuencial con estado recurrente. & Generación con contexto largo. \\
+\hline
+N2: Recurrente clásico & Redes recurrentes de tipo LSTM o GRU. & Clasificación y etiquetado. \\
+\hline
+N3: Híbrido o basado en reglas & Combinación de reglas, búsqueda y modelos pequeños. & Respuestas acotadas y validación. \\
+\hline
+\end{longtable}
+
+\texttt{[DECISIÓN PENDIENTE]} La clase N2 de motores coincide en nombre con
+el término N2 de la línea institucional (D-01). El modelo de estados de la
+Sección~\ref{sec:estados} no usa esa etiqueta, por lo que la colisión es solo
+de nombre. Si se aprueba D-07, la clase pasa a denominarse M2.
+
+\subsection{Origen y opacidad}
+
+Cada motor se clasifica también por origen:
+
+\begin{itemize}
+    \item \textbf{Privado propio:} pesos y código bajo control de la organización.
+    \item \textbf{Abierto con licencia permisiva:} pesos disponibles bajo licencia de uso.
+    \item \textbf{Comercial opaco:} pesos no disponibles o no inspeccionables; solo se conoce el comportamiento observable.
+\end{itemize}
+
+\texttt{[VIGENTE]} Para un motor comercial opaco no se infiere arquitectura,
+tamaño, datos de entrenamiento ni mecanismos internos. Cualquier afirmación
+sobre ellos se registra como NO\_VERIFICABLE.
+
+\subsection{Evaluación de motores opacos}
+
+\texttt{[PROPUESTA]} La evaluación de un motor opaco es exclusivamente
+conductual: entradas controladas, salidas observadas, regresión entre
+versiones y pruebas adversariales. Las conclusiones se limitan a lo observado.
+
+\subsection{Registro de motores}
+
+\texttt{[PROPUESTA]} Cada motor autorizado tiene una entrada en un registro
+con los campos siguientes. Todo campo no verificado figura como NO\_VERIFICABLE.
+
+\begin{itemize}
+    \item Identificador interno y versión.
+    \item Clase (T1, T2, N1, N2, N3) y origen (privado, abierto o comercial opaco).
+    \item Licencia y estado de verificación jurídica.
+    \item Disponibilidad de pesos (sí, no o parcial).
+    \item Hash de pesos o del artefacto, si es accesible.
+    \item Longitud máxima de contexto declarada por el proveedor.
+    \item Fechas de incorporación y retirada, y responsable.
+    \item Referencia a la última batería de pruebas.
+\end{itemize}
+
+%===============================================================
+\section{Modalidad sin dependencia de API}
+\label{sec:sin_api}
+
+\subsection{Requisito}
+
+\texttt{[PROPUESTA]} El motor se ejecuta dentro de infraestructura controlada
+por la organización. Ninguna petición del usuario se envía a un servicio
+externo de inferencia en tiempo de ejecución.
+
+\subsection{Puertas de admisión}
+
+Un motor opera en esta modalidad solo si cumple, con evidencia, las puertas siguientes:
+
+\begin{enumerate}[label=G\arabic*.]
+    \item \textbf{Licencia.} La licencia permite la ejecución local o en infraestructura propia sin restricciones incompatibles con el uso previsto. Estado inicial: SIN VERIFICAR. \texttt{[DECISIÓN PENDIENTE: revisión jurídica.]}
+    \item \textbf{Disponibilidad de pesos.} Existen los artefactos ejecutables. Si el motor solo es accesible mediante API del proveedor, la modalidad es NO\_APLICABLE para ese motor.
+    \item \textbf{Integridad.} Los artefactos tienen un hash registrado y comprobable.
+    \item \textbf{Recursos.} Cómputo y memoria declarados y medidos. Estado inicial: NO\_\allowbreak VERIFICABLE.
+    \item \textbf{Aislamiento.} El motor no tiene salida de red hacia servicios no autorizados.
+\end{enumerate}
+
+\subsection{Actualización y cambio de motor}
+
+\texttt{[PROPUESTA]} Ningún motor se sustituye sin: (a) evaluación en la
+batería de regresión; (b) registro del cambio con hash y versión; (c)
+aprobación de la autoridad competente. Un cambio silencioso de motor se
+clasifica como incidente.
+
+\subsection{Degradación}
+
+\texttt{[PROPUESTA]} Si el motor principal no está disponible, el sistema
+responde con un mensaje de servicio limitado. No cambia a otro motor salvo
+que la política de enrutamiento lo autorice para esa categoría.
+
+%===============================================================
+\section{Arquitectura de referencia}
+\label{sec:arquitectura}
+
+\texttt{[PROPUESTA]} Componentes lógicos. Su existencia material no está acreditada.
+
+\begin{longtable}{|p{3.6cm}|p{10.6cm}|}
+\hline
+\textbf{Componente} & \textbf{Responsabilidad} \\
+\hline
+\endhead
+Interfaz de chat & Recibe peticiones y presenta respuestas, con indicación de límites. \\
+\hline
+Clasificador de riesgo & Asigna categoría y riesgo a cada petición (Sección~\ref{sec:alcance}). \\
+\hline
+Enrutador & Selecciona motor según categoría, riesgo y registro (Sección~\ref{sec:motores}). \\
+\hline
+Motores & Ejecutan la inferencia en infraestructura controlada (Sección~\ref{sec:sin_api}). \\
+\hline
+Política y filtros & Aplican reglas de contenido, privacidad y seguridad antes y después de la inferencia. \\
+\hline
+Verificador & Comprueba condiciones verificables de la respuesta: formato, citas, código y cálculos. \\
+\hline
+Registro de evidencias & Guarda trazas, versiones, hashes y decisiones, sin contenido sensible innecesario. \\
+\hline
+Almacén de contexto & Gestiona la memoria de sesión según la política de retención. \\
+\hline
+Supervisión & Detecta anomalías, incidentes y desviaciones de métricas. \\
+\hline
+\end{longtable}
+
+%===============================================================
+\section{Flujo de una petición}
+\label{sec:flujo}
+
+\texttt{[PROPUESTA]} Flujo mínimo:
+
+\begin{enumerate}
+    \item Recepción y normalización de la entrada.
+    \item Detección de instrucciones incrustadas en los datos (\emph{prompt injection}). Se tratan como datos, no como órdenes.
+    \item Clasificación de categoría y riesgo.
+    \item Aplicación de la política de contenido. Si el contenido no es atendible, se rechaza y se registra.
+    \item Enrutamiento al motor autorizado.
+    \item Inferencia.
+    \item Verificación de condiciones comprobables.
+    \item Aplicación de la política de salida y etiquetado de incertidumbre.
+    \item Registro de la traza y entrega de la respuesta.
+\end{enumerate}
+
+\texttt{[VIGENTE]} Un fallo en cualquier paso produce una respuesta de
+limitación explícita. Nunca se entrega una respuesta incompleta sin aviso.
+
+%===============================================================
+\section{Código y Python}
+\label{sec:codigo}
+
+\subsection{Generación}
+
+\texttt{[PROPUESTA]} El sistema puede generar código en Python y otros
+lenguajes. Cada fragmento incluye propósito, entradas y salidas,
+dependencias con versión fijada y supuestos. No se presenta como verificado
+si no se ha ejecutado en el entorno de prueba.
+
+\subsection{Ejecución}
+
+\texttt{[PROPUESTA]} El código solo se ejecuta en un entorno aislado, sin
+acceso a datos de producción ni a red, con límites de tiempo y memoria. Cada
+ejecución requiere autorización explícita del usuario.
+
+\subsection{Estándares mínimos para Python}
+
+\begin{itemize}
+    \item Versión mínima declarada (por ejemplo, 3.11). \texttt{[DECISIÓN PENDIENTE: D-06.]}
+    \item Estilo verificable con análisis estático: formato, tipado y linter. \texttt{[PROPUESTA]}
+    \item Pruebas unitarias para funciones con lógica no trivial.
+    \item Manejo explícito de errores; sin captura genérica silenciosa.
+    \item Sin credenciales, claves ni rutas personales en el código.
+    \item Dependencias fijadas en un archivo de bloqueo.
+\end{itemize}
+
+\subsection{Límites}
+
+\texttt{[VIGENTE]} No se genera ni optimiza código malicioso: malware,
+explotación de vulnerabilidades de terceros o evasión de controles. Esta
+restricción no admite excepciones por contexto declarado.
+
+%===============================================================
+\section{Documentos y procesos}
+
+\texttt{[PROPUESTA]}
+
+\begin{itemize}
+    \item El documento original no se modifica sin registro de versión.
+    \item Los resúmenes y traducciones se marcan como derivados y referencian la fuente.
+    \item Los procesos se describen con entradas, salidas, responsables y puntos de decisión humana.
+    \item Las decisiones que afecten a personas, dinero o derechos se proponen para revisión humana. Nunca se ejecutan automáticamente.
+\end{itemize}
+
+%===============================================================
+\section{Seguridad, privacidad y datos}
+
+\subsection{Amenazas principales}
+
+\begin{longtable}{|p{3.8cm}|p{5.0cm}|p{5.2cm}|}
+\hline
+\textbf{Amenaza} & \textbf{Descripción} & \textbf{Control propuesto} \\
+\hline
+\endhead
+Inyección de instrucciones & Texto en los datos que intenta cambiar el comportamiento. & Separación de datos e instrucciones; filtros; pruebas adversariales. \\
+\hline
+Fuga de contexto & Exposición de información de otra sesión o de la configuración. & Aislamiento de sesiones; pruebas de regresión. \\
+\hline
+Datos sensibles & Tratamiento de datos de salud, identidad o finanzas sin base. & Minimización; no almacenar por defecto; avisos. \\
+\hline
+Alucinación de fuentes & Citas o datos inventados presentados como verificados. & Verificación de referencias; etiquetado de incertidumbre. \\
+\hline
+Deriva de motor & Cambio de comportamiento sin cambio registrado. & Hash, versión y regresión obligatoria. \\
+\hline
+Exfiltración por ejecución & Código que accede a recursos no autorizados. & Sandbox sin red; límites; revisión. \\
+\hline
+\end{longtable}
+
+\subsection{Datos}
+
+\texttt{[PROPUESTA]} La retención de sesión por defecto se limita a la
+duración de la conversación. Cualquier retención adicional requiere base
+documentada y consentimiento. Las categorías de datos sensibles se tratan
+conforme a la normativa aplicable. \texttt{[DECISIÓN PENDIENTE: D-05.]}
+
+%===============================================================
+\section{Calidad y evaluación}
+
+\subsection{Dimensiones}
+
+\texttt{[PROPUESTA]} La calidad se evalúa en: exactitud factual, utilidad,
+seguridad, cumplimiento de formato, coherencia con la categoría, robustez
+frente a inyección y honestidad sobre los límites.
+
+\subsection{Criterios}
+
+Cada criterio tiene un identificador con la forma
+\texttt{C-<área>-<número>-v<versión>} y se define antes de ejecutar la
+prueba. Un criterio sin definición previa no sustenta ningún veredicto.
+
+\subsection{Umbrales}
+
+\texttt{[DECISIÓN PENDIENTE: D-04.]} Los umbrales numéricos no se fijan en
+este documento. Los establece la autoridad competente con base en la
+evaluación de riesgo de cada categoría.
+
+\subsection{Conjuntos de prueba}
+
+\texttt{[PROPUESTA]} Conjuntos independientes para funcionalidad, regresión,
+adversarial, integridad de evidencias y comportamiento ante fallos. Los
+fixtures sintéticos validan la estructura de los registros, no miden la
+calidad de un motor.
+
+%===============================================================
+\section{Evidencia}
+\label{sec:evidencia}
+
+\texttt{[VIGENTE]} Toda evidencia es reproducible, fechada, atribuible,
+versionada e identificada como REAL o SIMULACION. Un resultado simulado
+nunca se presenta como resultado real.
+
+\texttt{[PROPUESTA]} Campos mínimos de un registro de prueba: identificador,
+criterio, modo de registro, estado de ejecución, veredicto, estado de
+evidencia, referencia y hash (si existe), incidencias, responsable de
+revisión y fecha de ejecución (vacía si no hubo ejecución real).
+
+\texttt{[VIGENTE]} Un hash prueba correspondencia de bytes. No prueba autoría ni fecha.
+
+%===============================================================
+\section{Estados institucionales y transiciones}
+\label{sec:estados}
+
+\subsection{Modelo de estados}
+
+\texttt{[VIGENTE]} Cada capacidad recorre una única secuencia ascendente:
+
+\begin{longtable}{|c|p{3.7cm}|p{3.4cm}|p{5.1cm}|}
+\hline
+\textbf{Orden} & \textbf{Estado} & \textbf{Condición} & \textbf{Evidencia mínima} \\
+\hline
+\endhead
+0 & DEFINIDO & --- & Especificación con identificador de requisito. \\
+\hline
+1 & DISEÑADO & Diseño arquitectónico & Documento de arquitectura versionado. \\
+\hline
+2 & IMPLEMENTADO & Implementación material & Referencia verificable al artefacto (repositorio, versión y hash). \\
+\hline
+3 & DISPONIBLE & Disponibilidad técnica & Registro fechado de accesibilidad. \\
+\hline
+4 & VALIDADO & Validación y verificación & Informe de verificador independiente. \\
+\hline
+5 & AUTORIZADO & Autorización aplicable & Acto de autoridad competente identificada. \\
+\hline
+6 & ACTIVADO & Activación operativa & Registro de activación con alcance y autorización referenciada. \\
+\hline
+7 & OBSERVADO & Operación real observada & Registro de ejecución real con resultados. \\
+\hline
+\end{longtable}
+
+\subsection{Reglas de transición}
+
+\begin{enumerate}[label=\arabic*.]
+    \item Las transiciones ascendentes son secuenciales. No se admiten saltos.
+    \item Cada transición requiere la evidencia del estado destino.
+    \item Las transiciones descendentes (suspensión, revocación, reversión) son admisibles y se registran.
+    \item Ningún estado se hereda por similitud entre capacidades.
+\end{enumerate}
+
+\subsection{Estado vigente}
+
+\begin{longtable}{|p{6.5cm}|p{6.5cm}|}
+\hline
+\textbf{Elemento} & \textbf{Estado} \\
+\hline
+\endhead
+Versión del documento & 1.2.1-CANDIDATE \\
+\hline
+Objetivo de producción real & Objetivo de diseño; no es un estado alcanzado \\
+\hline
+Cobertura documental & Declarada; no verificada \\
+\hline
+Evaluación de motores opacos & No realizada \\
+\hline
+Componentes de prueba GA-COMP-001 y GA-EVI-001 & IMPLEMENTADO como artefacto de prueba; no es capacidad del sistema \\
+\hline
+Validación de GA-EVI-001 & Pendiente: requiere dos validadores independientes \\
+\hline
+Modalidad sin API & NO\_APLICABLE hasta superar G1 a G5 \\
+\hline
+Implementación de capacidades del sistema & NO\_VERIFICABLE \\
+\hline
+Pruebas reales & No acreditadas \\
+\hline
+Aprobación AGF & No emitida \\
+\hline
+Autorización de producción & No emitida \\
+\hline
+Producción real activada & No \\
+\hline
+\end{longtable}
+
+%===============================================================
+\section{Procedimiento de evidencia y reproducibilidad}
+\label{sec:procedimiento}
+
+\texttt{[VIGENTE]} Reglas aplicadas en la práctica desde la revisión 1.2.0:
+
+\begin{enumerate}[label=P\arabic*.]
+    \item La especificación se fija, con archivo y hash, antes de escribir el componente.
+    \item Los valores esperados se calculan con una herramienta independiente del componente probado, por ejemplo \texttt{sha256sum}.
+    \item El ejecutor lee los casos desde la especificación y no contiene casos propios.
+    \item Cada registro incluye, antes de la ejecución, los hashes de la especificación, del componente y del ejecutor.
+    \item Un registro no se modifica después de calcular su hash. Un cambio posterior genera un incidente y un nuevo registro.
+    \item Los bloques con comandos se guardan en un archivo o se ejecutan desde variables; no se pegan como texto en la terminal.
+    \item Un resultado distinto del esperado se registra como FALLIDA para ese caso. La especificación no se modifica para que pase.
+    \item Una validación requiere un validador distinto del diseñador, en un entorno distinto, y la obtención de los hashes de referencia.
+\end{enumerate}
+
+\texttt{[VIGENTE]} Las reglas P5 y P6 surgieron de un caso concreto: al
+añadir una línea a un registro ya calculado, su hash dejó de coincidir. El
+registro original se conservó como incidente y no se usó como evidencia.
+
+\subsection{Componentes de prueba}
+
+\begin{longtable}{|p{3.4cm}|p{4.6cm}|p{6cm}|}
+\hline
+\textbf{Componente} & \textbf{Función} & \textbf{Estado y pendiente} \\
+\hline
+\endhead
+GA-COMP-001 & Conversión a mayúsculas; prueba del flujo de definición, ejecución y registro & IMPLEMENTADO como artefacto de prueba. No acredita capacidad alguna. \\
+\hline
+GA-EVI-001 & Verificación de SHA-256 frente a hash declarado; 5 casos & IMPLEMENTADO como artefacto de prueba. VALIDADO pendiente de dos validadores independientes. \\
+\hline
+\end{longtable}
+
+\subsection{Referencias de GA-EVI-001}
+
+\begin{longtable}{|p{4.6cm}|p{10.6cm}|}
+\hline
+\textbf{Artefacto} & \textbf{SHA-256} \\
+\hline
+\endhead
+paquete\_GA-EVI-001.tgz (verificar antes de extraer) & {\footnotesize\ttfamily \seqsplit{fedfe34680ae60f3c4cfb38a5c1a617bb6f22cc8e4146332dbe8eb334098651a}} \\
+\hline
+spec\_GA-EVI-001.txt & {\footnotesize\ttfamily \seqsplit{68f25ff61b68789628fd9d1c177193b63874214f5d5a568c0fd1ee6a6cffa7d4}} \\
+\hline
+evi001.py & {\footnotesize\ttfamily \seqsplit{cf725d300b957db46eeade2639b550e78d4ba4c64acfe2a4b00dade57b92dfe3}} \\
+\hline
+evi001\_run.py & {\footnotesize\ttfamily \seqsplit{fc06fb127546d9f43e32f39541f98db3f6dd14baa7568b4219811d75c24e318a}} \\
+\hline
+casos/ok.txt & {\footnotesize\ttfamily \seqsplit{9ab1c0d4456fb24c875ada273cc004ec0f6e560def4211167926b721325925e6}} \\
+\hline
+casos/mal.txt & {\footnotesize\ttfamily \seqsplit{02089bfd7c9a6609fa54edf125fc75f0dd0c1a6262b443707f9c1396b5a7306e}} \\
+\hline
+casos/vacio.txt & {\footnotesize\ttfamily \seqsplit{e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855}} \\
+\hline
+\end{longtable}
+
+\texttt{[VIGENTE]} La ejecución de reproducción 1, realizada en el mismo
+dispositivo y sobre la carpeta de origen, no cuenta como validación
+independiente.
+
+\subsection{Criterio de validación}
+
+\texttt{[PROPUESTA]} GA-EVI-001 pasa a VALIDADO solo si se cumplen todas estas condiciones:
+
+\begin{enumerate}
+    \item Dos validadores obtienen el hash del paquete y los seis hashes de los artefactos extraídos.
+    \item Ambos obtienen spec\_sha256 igual a 68f25ff6\ldots a7d4.
+    \item Ambos obtienen cinco PASS y VEREDICTO\_CONJUNTO=SUPERADA.
+    \item Ningún validador diseñó los casos ni escribió el componente.
+    \item Cada validador trabajó en un entorno distinto: otro dispositivo o usuario.
+\end{enumerate}
+
+Si un validador obtiene un resultado distinto, se registra como incidente.
+No se corrige la especificación ni se repite la prueba hasta entender la
+diferencia.
+
+\section{Operación}
+
+\subsection{Monitorización}
+
+\texttt{[PROPUESTA]} Seguimiento de tasas de rechazo, respuestas limitadas,
+incidencias de integridad, latencia y cambios de motor. Los umbrales de
+alerta son decisión pendiente.
+
+\subsection{Incidentes}
+
+\texttt{[PROPUESTA]} Cada incidente registra fecha, descripción, impacto,
+mitigación, responsable y cierre. Estados de ciclo: Abierto, Contenido, En
+verificación y Cerrado. El cierre requiere comprobación independiente.
+
+\subsection{Reversión}
+
+\texttt{[PROPUESTA]} Cada cambio de motor, política o código tiene un
+procedimiento de reversión documentado y probado en un entorno de prueba.
+
+%===============================================================
+\section{Gobernanza y roles}
+
+\texttt{[PROPUESTA]} Roles funcionales. La asignación de personas es decisión pendiente.
+
+\begin{itemize}
+    \item \textbf{Custodio:} responsable de la integridad documental y del registro de cambios.
+    \item \textbf{Autoridad competente:} emite autorizaciones. \texttt{[DECISIÓN PENDIENTE: D-02.]}
+    \item \textbf{Verificador independiente:} comprueba resultados sin haber diseñado ni implementado lo evaluado.
+    \item \textbf{Responsable jurídico:} evalúa licencias y marco de datos. \texttt{[DECISIÓN PENDIENTE: D-03 y D-05.]}
+\end{itemize}
+
+%===============================================================
+\section{Riesgos}
+
+\begin{longtable}{|p{3.8cm}|p{1.9cm}|p{7.8cm}|}
+\hline
+\textbf{Riesgo} & \textbf{Severidad} & \textbf{Mitigación propuesta} \\
+\hline
+\endhead
+Incumplimiento de licencia de motor comercial opaco & ALTA & Puerta G1 y revisión jurídica antes de cualquier uso. \\
+\hline
+Motor sin pesos accesibles tratado como local & ALTA & Puerta G2; estado NO\_APLICABLE. \\
+\hline
+Respuesta presentada como verificada sin evidencia & ALTA & Etiquetado de incertidumbre; verificación de condiciones comprobables. \\
+\hline
+Ejecución de código fuera de sandbox & ALTA & Aislamiento sin red y autorización por tarea. \\
+\hline
+Cambio silencioso de motor & MEDIA & Registro de versión y regresión obligatoria. \\
+\hline
+Retención excesiva de datos & MEDIA & Retención limitada por defecto. \\
+\hline
+Registro modificado tras calcular su hash & MEDIA & Reglas P5 y P6; registro de incidente y nuevo registro. \\
+\hline
+Validación no independiente presentada como validada & ALTA & Criterio de validación de la Sección~\ref{sec:procedimiento} y decisión D-09. \\
+\hline
+\end{longtable}
+
+%===============================================================
+\section{Decisiones pendientes}
+
+\begin{longtable}{|p{1.3cm}|p{6.4cm}|p{5.6cm}|}
+\hline
+\textbf{ID} & \textbf{Decisión o brecha} & \textbf{Requisito para cerrar} \\
+\hline
+\endhead
+D-01 & Expansión y autoridad de MUDF, GACF, N2, N3 y AGF & Definición documental autorizada. \\
+\hline
+D-02 & Autoridad competente para autorizaciones & Acto de designación. \\
+\hline
+D-03 & Licencias de los motores comerciales opacos & Revisión jurídica con el documento de licencia. \\
+\hline
+D-04 & Umbrales de aceptación por categoría & Decisión de autoridad competente con evaluación de riesgo. \\
+\hline
+D-05 & Marco jurídico de datos y plazos de retención & Revisión jurídica. \\
+\hline
+D-06 & Versión mínima de Python y estándares de estilo & Decisión técnica documentada. \\
+\hline
+D-07 & Nomenclatura de la clase N2 frente al estado N2 & Acuerdo de nomenclatura. \\
+\hline
+D-08 & Recursos de hardware y medición real & Medición con evidencia REAL. \\
+\hline
+D-09 & Selección independiente de casos para GA-EVI-001 & Revisión de la lista de casos por un validador distinto del diseñador; cambios en una especificación v2. \\
+\hline
+D-10 & Política ante incidentes de integridad de registros & Procedimiento aprobado que defina la conservación, la clasificación y la comunicación de incidentes. \\
+\hline
+\end{longtable}
+
+%===============================================================
+\section{Hoja de ruta condicionada}
+
+\texttt{[PROPUESTA]} Las fases dependen de condiciones de entrada, no de fechas.
+
+\begin{enumerate}
+    \item \textbf{Fase A: cierre documental.} Entrada: D-01 y D-02 resueltas.
+    \item \textbf{Fase B: evaluación de motores.} Entrada: fase A, puertas G1 a G5 documentadas para al menos un motor y, si la evaluación usa comprobación de integridad, GA-EVI-001 en estado VALIDADO.
+    \item \textbf{Fase C: pruebas controladas.} Entrada: fase B y criterios con umbrales (D-04).
+    \item \textbf{Fase D: decisión de activación.} Entrada: evidencia REAL verificada por un verificador independiente y autorización emitida.
+\end{enumerate}
+
+%===============================================================
+\section{Regla de no autocertificación}
+
+\texttt{[VIGENTE]} La existencia de este documento, su nivel de detalle, su
+coherencia interna o la presencia de controles descritos no constituyen por
+sí mismos aprobación AGF, incorporación contractual, implementación, pruebas
+ejecutadas, verificación independiente, autorización de producción ni
+activación. Ningún estado se eleva por afirmación documental.
+
+%===============================================================
+\section{Glosario}
+
+\begin{description}[leftmargin=4.2cm, style=nextline]
+    \item[Transformer] Arquitectura basada en atención. Puede ser decodificadora, codificadora o ambas.
+    \item[No transformer] Cualquier arquitectura no basada en atención, como SSM, recurrente o híbrida.
+    \item[Motor opaco] Motor cuyos pesos o mecanismos internos no son inspeccionables.
+    \item[SIMULACION] Registro de un caso hipotético o sintético.
+    \item[REAL] Registro de una interacción o ejecución que efectivamente ocurrió.
+    \item[NO\_VERIFICABLE, NO\_DISPONIBLE, NO\_APLICABLE] Términos de ausencia definidos en la Sección~1.
+    \item[Paquete] Archivo comprimido con los artefactos de una prueba, referenciado por su hash.
+    \item[Validador] Persona distinta del diseñador que repite una prueba en un entorno distinto.
+    \item[Registro] Salida de una ejecución, con los hashes de todo lo que intervino, que no se modifica después de calcularse su hash.
+\end{description}
+
+%===============================================================
+\section*{Control de cambios}
+
+\begin{longtable}{|p{3cm}|p{2.6cm}|p{8.6cm}|}
+\hline
+\textbf{Versión} & \textbf{Fecha} & \textbf{Cambio} \\
+\hline
+\endhead
+1.0.0-CANDIDATE & Previa & Modelo de estados y regla de no autocertificación. \\
+\hline
+1.1.0-CANDIDATE & 23/11/2026 & Documento completo: alcance, clases de motor, modalidad sin API (G1 a G5), arquitectura, código, seguridad, evaluación, operación, riesgos y decisiones pendientes. \\
+\hline
+1.1.1-CANDIDATE & 23/11/2026 & Revisión de formato y claridad. Unificación del vocabulario de ausencia (NO\_VERIFICABLE sustituye a NO\_VERIFICADO). Renombrada la etiqueta de texto no comprobado a [SIN VERIFICAR]. Carga condicional de babel. Encabezados de tabla repetibles. Resumen ejecutivo. \\
+\hline
+1.2.0-CANDIDATE & 23/11/2026 & Estado real de los componentes de prueba y de su validación. Procedimiento de evidencia y reproducibilidad (P1 a P8). Criterio de validación para GA-EVI-001. Alcance de la autorización. Decisiones D-09 y D-10. Nuevos riesgos. \\
+\hline
+1.2.1-CANDIDATE & 23/11/2026 & Correcciones de consistencia: referencia de la clase N2; tabla de referencias con los seis artefactos extraídos y el paquete; cortes de línea en hashes; anchos de tablas; eliminación de xcolor sin uso. \\
+\hline
+\end{longtable}
+
+\end{document}
