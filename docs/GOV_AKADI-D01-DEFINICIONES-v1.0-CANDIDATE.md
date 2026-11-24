@@ -1,4 +1,4 @@
-# D-01 - Definiciones - CANDIDATE
+# D-01 - Definiciones - CERRADO
 
 ## MUDF - CERRADO CON FUENTE
 - Expansion: MATRIZ UNIVERSAL DE DETECCION DE FALLOS
@@ -31,7 +31,8 @@
   N2 Principio Rector, N3 Reglas Generales y por Capa. Registrada como
   descartada por decision del custodio, no por conveniencia.
 
-## AGF - PENDIENTE
-- Uso: Kernel AGF, AGF-KERNEL. Sin expansion AGF = ... en fuente
-  verificada hasta ahora. Sin acto que defina autoridad de AGF sobre GOV_AKADI.
-- Falta: expansion real y autoridad real del custodio, no ...
+## AGF - CERRADO POR DECISION DEL CUSTODIO
+- Expansion: AKADI Governance Framework
+- Autoridad: AGF es el marco que define la jerarquia N1-N5 y las reglas
+  de gobernanza de GOV_AKADI, no solo una guia.
+- Fuente: Decision del custodio comunicada en sesion, registrada en repo.
