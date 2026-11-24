@@ -21,19 +21,17 @@
   opacos, con trazabilidad y preservacion de evidencia.
 - Objetivo rector: OBJ-CORE-001 v1.0 segun REG-001.
 
-## N2 / N3 - CONFLICTO DOCUMENTADO, PENDIENTE DECISION DEL CUSTODIO
-- Opcion A - AGF-KERNEL_v1.3.0_INTEGRADO.txt:264, por dentro dice v1.2.1:
-  N1 Principio rector, N2 Reglas generales, N3 Definiciones por capa,
-  N4 Instrucciones del usuario compatibles, N5 Ejemplos y formatos sugeridos.
-- Opcion B - version 1.30 final.txt:243-247, Bloque 08/12 CAPA 11:
-  N1 Instrucciones directas del usuario, N2 Principio Rector del marco,
-  N3 Reglas Generales y por Capa, N4 Informacion verificada en buscador
-  externo independiente, N5 Conocimiento interno del modelo,
-  N6 Sugerencias, ejemplos y formatos.
-- No se elige una por conveniencia. CAPA 14 de version 1.30 exige
-  registrar ambas y no resolver arbitrariamente.
-- Falta: decision del custodio sobre cual jerarquia es canonica para GOV_AKADI.
+## N2 / N3 - CERRADO POR DECISION DEL CUSTODIO: OPCION A
+- Decision: N2/N3 = A, comunicada por custodio.
+- Canonica: N1 Principio rector, N2 Reglas generales, N3 Definiciones
+  por capa, N4 Instrucciones del usuario compatibles, N5 Ejemplos
+  y formatos sugeridos.
+- Fuente canonica: AGF-KERNEL_v1.3.0_INTEGRADO.txt:264, por dentro v1.2.1.
+- No canonica: version 1.30 final.txt:243-247, N1 Instrucciones directas,
+  N2 Principio Rector, N3 Reglas Generales y por Capa. Registrada como
+  descartada por decision del custodio, no por conveniencia.
 
 ## AGF - PENDIENTE
 - Uso: Kernel AGF, AGF-KERNEL. Sin expansion AGF = ... en fuente
   verificada hasta ahora. Sin acto que defina autoridad de AGF sobre GOV_AKADI.
+- Falta: expansion real y autoridad real del custodio, no ...
